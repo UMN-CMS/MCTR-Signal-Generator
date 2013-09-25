@@ -1,10 +1,9 @@
-void my_func()
-{
+#include <iostream>
 
-}
+using namespace std;
+
 
 int main()
 {
-   my_func();
 }
 
