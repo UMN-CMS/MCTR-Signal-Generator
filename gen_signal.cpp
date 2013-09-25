@@ -1,4 +1,6 @@
 #include <iostream>
+#include <stdio.h>
+#include <stdint.h>
 
 using namespace std;
 
@@ -15,45 +17,36 @@ class Packet
         }
         ~Packet() {} 
     private:
-        char data[12];
+        uint8_t data[12];
 
         void set_bits(int byte_num, int start, int low_bit, int hi_bit, int value)
         {
-            cout << "value:";
-            output_char(value);
-            char in_mask = make_mask(low_bit,hi_bit);
-
-            cout << "Mask:";
-            output_char(in_mask);
-            cout << "masked value: ";
-            output_char(in_mask & value);
-            cout << "masked value shifted: ";
-            output_char(((in_mask & value) << start) >> low_bit);
-            char out_mask = ~make_mask(start,start+(hi_bit-low_bit +1));
+            uint8_t in_mask = make_mask(low_bit,hi_bit);
+            uint8_t out_mask = ~make_mask(start,start+(hi_bit-low_bit +1));
             data[byte_num] = (((in_mask & value) << start) >> low_bit) + (out_mask & data[byte_num]);
         }
 
-        void output_char(char value)
+        void output_char(uint8_t value)
         {
             for(int j=7; j>=0;j--)
                 cout << (bool)(value & (1 << j));
             cout << endl;
         }
 
-        char make_mask(int low_bit, int hi_bit)
+        uint8_t make_mask(int low_bit, int hi_bit)
         {
-            char mask=0;
+            uint8_t mask=0;
             for(int i = low_bit; i <= hi_bit;i++)
                 mask+=(1 << i);
             return mask;
         }
 
     public:
-        void set_adc(int qie,char value)
+        void set_adc(int qie,uint8_t value)
         {
             data[qie+2]=value;
         }
-        void set_tdc(int qie, char value)
+        void set_tdc(int qie, uint8_t value)
         {
             if(value < 64)
             {
@@ -90,6 +83,13 @@ class Packet
             for(int i=0; i<12;i++)
             {
                 cout << i << ": ";
+                output_char(data[i]);
+            }
+        }
+        void write_data()
+        {
+            for(int i=0; i<12;i++)
+            {
                 output_char(data[i]);
             }
         }
