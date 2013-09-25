@@ -1,3 +1,5 @@
+# executable
+gen_signal
 # Compiled Object files
 *.slo
 *.lo
