@@ -36,7 +36,7 @@ class Packet
         void output_char(char value)
         {
             for(int j=7; j>=0;j--)
-                cout << ((value & (1 << j)) != 0);
+                cout << (bool)(value & (1 << j));
             cout << endl;
         }
 
