@@ -1,6 +1,8 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <time.h>
 
 using namespace std;
 
@@ -12,8 +14,15 @@ class Packet
             for(int i=0; i<12;i++)
                 data[i]=0;
 
-            //set bc0
-            data[1] = 1;
+            data[0] = (uint8_t)0xbc;
+        }
+        Packet(bool bc0) 
+        {
+            for(int i=0; i<12;i++)
+                data[i]=0;
+
+            data[0] = (uint8_t)0xbc;
+            data[1] = (uint8_t)bc0;
         }
         ~Packet() {} 
     private:
@@ -78,6 +87,11 @@ class Packet
             else cout << "tdc value, " << (int)value << ", to high\n";
         }
 
+        void set_capid(int i)
+        {
+            set_bits(1,2,0,1,i);
+        }
+
         void print_data()
         {
             for(int i=0; i<12;i++)
@@ -88,32 +102,55 @@ class Packet
         }
         void write_data()
         {
-            for(int i=0; i<12;i++)
+            for(int i=0; i<6;i++)
             {
-                output_char(data[i]);
+                printf("%02x%02x\n",data[2*i+1],data[2*i]);
             }
         }
 
 };
 
+
+class generator
+{
+    
+};
 int main()
 {
-    Packet mypacket;
-    
-    mypacket.set_adc(0,255);
-    mypacket.set_adc(1,255);
-    mypacket.set_adc(2,255);
-    mypacket.set_adc(3,255);
-    mypacket.set_adc(4,255);
-    mypacket.set_adc(5,255);
-    mypacket.set_tdc(0,63);
-    mypacket.set_tdc(1,63);
-    mypacket.set_tdc(2,63);
-    mypacket.set_tdc(3,63);
-    mypacket.set_tdc(4,63);
-    mypacket.set_tdc(5,63);
+
+    srand(time(NULL));
+
+    Packet mypacket(1);
+    mypacket.set_capid(1);
+    mypacket.set_adc(0,rand() % 256);
+    mypacket.set_adc(1,rand() % 256);
+    mypacket.set_adc(2,rand() % 256);
+    mypacket.set_adc(3,rand() % 256);
+    mypacket.set_adc(4,rand() % 256);
+    mypacket.set_adc(5,rand() % 256);
+    mypacket.set_tdc(0,rand() % 64);
+    mypacket.set_tdc(1,rand() % 64);
+    mypacket.set_tdc(2,rand() % 64);
+    mypacket.set_tdc(3,rand() % 64);
+    mypacket.set_tdc(4,rand() % 64);
+    mypacket.set_tdc(5,rand() % 64);
+
+    //mypacket.set_adc(0,255);
+    //mypacket.set_adc(1,255);
+    //mypacket.set_adc(2,255);
+    //mypacket.set_adc(3,255);
+    //mypacket.set_adc(4,255);
+    //mypacket.set_adc(5,255);
+    //mypacket.set_tdc(0,63);
+    //mypacket.set_tdc(1,63);
+    //mypacket.set_tdc(2,63);
+    //mypacket.set_tdc(3,63);
+    //mypacket.set_tdc(4,63);
+    //mypacket.set_tdc(5,63);
+
 
 
     mypacket.print_data();
+    mypacket.write_data();
 }
 
