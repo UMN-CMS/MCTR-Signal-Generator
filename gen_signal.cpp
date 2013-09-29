@@ -154,11 +154,7 @@ class Generator
         }
 
     private:
-        virtual int get_data(int orbit, int channel, int qie, uint8_t &adc,  uint8_t &tdc)
-        {
-            adc = orbit + channel + qie;
-            tdc = orbit + channel + qie;
-        }
+        virtual int get_data(int orbit, int channel, int qie, uint8_t &adc,  uint8_t &tdc) = 0;
         void create_data()
         {
             cout << "create_data\n";
@@ -172,7 +168,7 @@ class Generator
                     cout << "debug: " << i<< " " << j<< endl;
                     packets.at(j).at(i).set_capid(i % 3);
                     for( int k = 0; k< qies; k++) {
-                        get_data(i,j,k,adc,tdc);
+                        this->get_data(i,j,k,adc,tdc);
                         packets.at(j).at(i).set_adc(k,adc);
                         packets.at(j).at(i).set_tdc(k,tdc);
                     }
@@ -198,9 +194,27 @@ class Generator
         int qies;
 
 };
+
+class special_Generator : public Generator
+{
+    public:
+        special_Generator() : Generator() {}
+        special_Generator(int a,int b) : Generator(a,b) {}
+    private:
+        virtual int get_data(int orbit, int channel, int qie, uint8_t &adc,  uint8_t &tdc)
+        {
+            adc = 0;
+            tdc = 0;
+            adc = orbit + channel + qie;
+            tdc = orbit + channel + qie;
+        }
+};
+
+
+
 int main()
 {
-    Generator mygen;
+    special_Generator mygen;
     mygen.write_data();
     //mygen.print_data();
 }
