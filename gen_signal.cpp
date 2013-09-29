@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
+#include <vector>
 
 using namespace std;
 
@@ -111,46 +113,95 @@ class Packet
 };
 
 
-class generator
+class Generator
 {
-    
+    public:
+        Generator()
+        {
+            orbits = 10;
+            channels = 3;
+            qies = 6;
+            cout << "Constructor\n";
+            init_matrix();
+            create_data();
+        }
+
+        Generator(int n_orbits, int n_channels) 
+        {
+            orbits = n_orbits;
+            channels = n_channels;
+            qies = 6;
+            init_matrix();
+            create_data();
+        }
+        ~Generator() {}
+
+    public:
+        void write_data()
+        {
+            for ( int j = 0; j< channels; j++)
+                for (int i = 0; i < orbits; i++)
+                    for( int k = 0; k< qies; k++)
+                        packets.at(j).at(i).write_data();
+        }
+
+        void print_data()
+        {
+            for ( int j = 0; j< channels; j++)
+                for (int i = 0; i < orbits; i++)
+                    for( int k = 0; k< qies; k++)
+                        packets.at(j).at(i).print_data();
+        }
+
+    private:
+        virtual int get_data(int orbit, int channel, int qie, uint8_t &adc,  uint8_t &tdc)
+        {
+            adc = orbit + channel + qie;
+            tdc = orbit + channel + qie;
+        }
+        void create_data()
+        {
+            cout << "create_data\n";
+            uint8_t adc=0;
+            uint8_t tdc=0;
+
+            cout << packets.size();
+
+            for ( int j = 0; j< channels; j++) {
+                for (int i = 0; i < orbits; i++) {
+                    cout << "debug: " << i<< " " << j<< endl;
+                    packets.at(j).at(i).set_capid(i % 3);
+                    for( int k = 0; k< qies; k++) {
+                        get_data(i,j,k,adc,tdc);
+                        packets.at(j).at(i).set_adc(k,adc);
+                        packets.at(j).at(i).set_tdc(k,tdc);
+                    }
+                }
+            }
+        }
+        void init_matrix()
+        {
+            cout << "init\n";
+            for ( int j = 0; j< channels; j++)
+            {
+                vector<Packet> temp_vec;
+                temp_vec.push_back(Packet(true));
+                for (int i = 1; i < orbits; i++)
+                    temp_vec.push_back(Packet());
+                packets.push_back(temp_vec);
+            }
+        }
+
+        vector< vector<Packet> > packets;
+        int channels;
+        int orbits;
+        int qies;
+
 };
 int main()
 {
-
-    srand(time(NULL));
-
-    Packet mypacket(1);
-    mypacket.set_capid(1);
-    mypacket.set_adc(0,rand() % 256);
-    mypacket.set_adc(1,rand() % 256);
-    mypacket.set_adc(2,rand() % 256);
-    mypacket.set_adc(3,rand() % 256);
-    mypacket.set_adc(4,rand() % 256);
-    mypacket.set_adc(5,rand() % 256);
-    mypacket.set_tdc(0,rand() % 64);
-    mypacket.set_tdc(1,rand() % 64);
-    mypacket.set_tdc(2,rand() % 64);
-    mypacket.set_tdc(3,rand() % 64);
-    mypacket.set_tdc(4,rand() % 64);
-    mypacket.set_tdc(5,rand() % 64);
-
-    //mypacket.set_adc(0,255);
-    //mypacket.set_adc(1,255);
-    //mypacket.set_adc(2,255);
-    //mypacket.set_adc(3,255);
-    //mypacket.set_adc(4,255);
-    //mypacket.set_adc(5,255);
-    //mypacket.set_tdc(0,63);
-    //mypacket.set_tdc(1,63);
-    //mypacket.set_tdc(2,63);
-    //mypacket.set_tdc(3,63);
-    //mypacket.set_tdc(4,63);
-    //mypacket.set_tdc(5,63);
-
-
-
-    mypacket.print_data();
-    mypacket.write_data();
+    Generator mygen;
+    mygen.write_data();
+    //mygen.print_data();
 }
 
