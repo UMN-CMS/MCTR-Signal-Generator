@@ -153,7 +153,7 @@ class Generator
                         packets.at(j).at(i).print_data();
         }
 
-    private:
+    protected:
         virtual int get_data(int orbit, int channel, int qie, uint8_t &adc,  uint8_t &tdc) = 0;
         void create_data()
         {
@@ -200,7 +200,7 @@ class special_Generator : public Generator
     public:
         special_Generator() : Generator() {}
         special_Generator(int a,int b) : Generator(a,b) {}
-    private:
+    protected:
         virtual int get_data(int orbit, int channel, int qie, uint8_t &adc,  uint8_t &tdc)
         {
             adc = 0;
