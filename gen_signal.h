@@ -31,7 +31,7 @@ class Packet
         void print_hex();
 
         //Write hex to file
-        //void write_hex();
+        //void write_hex(char name[]);
 
     private:
         //Constants
@@ -50,6 +50,8 @@ class Generator
     public:
         void print_hex();
         void print_binary();
+        //Write hex to file
+        void write_hex(char name[]);
 
     protected:
         virtual void get_data(int fiber, int qie, int BX, uint8_t &adc,  uint8_t &tdc);
@@ -64,6 +66,7 @@ class Generator
         //Member variables
         std::vector< std::vector<Packet> > packets;
         int m_nfibers;
+        bool m_data_created;
 
 };
 

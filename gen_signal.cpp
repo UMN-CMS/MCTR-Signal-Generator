@@ -107,18 +107,20 @@ Generator::Generator()
 {
     m_nfibers = 1;
     init_matrix();
+    m_data_created = false;
 }
 
 Generator::Generator(int fibers) : m_nfibers(fibers)
 {
     init_matrix();
+    m_data_created = false;
 }
 
 Generator::~Generator() {}
 
 void Generator::print_hex()
 {
-    create_data();
+    if(!m_data_created) create_data();
     for ( int j = 0; j< m_nfibers; j++)
         for (int i = 0; i < N_BX; i++)
             packets.at(j).at(i).print_hex();
@@ -126,9 +128,18 @@ void Generator::print_hex()
 
 void Generator::print_binary()
 {
+    if(!m_data_created) create_data();
     for ( int j = 0; j< m_nfibers; j++)
         for (int i = 0; i < N_BX; i++)
             packets.at(j).at(i).print_binary();
+}
+
+void Generator::write_hex(char name[])
+{
+    if(!m_data_created) create_data();
+    for ( int j = 0; j< m_nfibers; j++)
+        for (int i = 0; i < N_BX; i++)
+            packets.at(j).at(i).print_hex();
 }
 
 void Generator::get_data(int fiber, int qie, int BX, uint8_t &adc,  uint8_t &tdc) 
@@ -152,6 +163,7 @@ void Generator::create_data()
             }
         }
     }
+    m_data_created = true;
 }
 void Generator::init_matrix()
 {
@@ -164,4 +176,3 @@ void Generator::init_matrix()
         packets.push_back(temp_vec);
     }
 }
-
