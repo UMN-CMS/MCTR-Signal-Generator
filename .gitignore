@@ -1,5 +1,6 @@
 # executable
 gen_signal
+tags
 # Compiled Object files
 *.slo
 *.lo
