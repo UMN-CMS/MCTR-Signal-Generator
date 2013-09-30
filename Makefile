@@ -1,5 +1,19 @@
+BIN=gen-test
 
-all: gen_signal
+OBJF = gen_signal.o
+SOURCES = main.cpp
+CXX= g++
+CXXFLAGS+= -Wall -pedantic
 
-gen_signal: gen_signal.o
-	g++ -o gen_signal gen_signal.o
+all: $(BIN)
+
+$(BIN): $(OBJF) $(SOURCES)
+	$(CXX) $(CXXFLAGS) $(OBJF) $(SOURCES) -o $(BIN) 
+
+clean:
+	rm -f $(OJBF) $(BIN)
+
+%.o : %.cpp %.h
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+

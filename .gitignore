@@ -1,5 +1,5 @@
 # executable
-gen_signal
+gen-test
 tags
 # Compiled Object files
 *.slo
