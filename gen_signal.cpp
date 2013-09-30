@@ -6,8 +6,6 @@
 #include <math.h>
 #include <vector>
 
-using namespace std;
-
 class Packet
 {
     public:
@@ -40,8 +38,8 @@ class Packet
         void output_char(uint8_t value)
         {
             for(int j=7; j>=0;j--)
-                cout << (bool)(value & (1 << j));
-            cout << endl;
+                std::cout << (bool)(value & (1 << j));
+            std::cout << std::endl;
         }
 
         uint8_t make_mask(int low_bit, int hi_bit)
@@ -55,7 +53,10 @@ class Packet
     public:
         void set_adc(int qie,uint8_t value)
         {
-            data[qie+2]=value;
+            if(0<= qie && qie < CHANNELS_PER_FIBER)
+                data[qie+2]=value;
+            else
+                std::cerr << "Invalid QIE number: " << qie << std::endl;
         }
         void set_tdc(int qie, uint8_t value)
         {
@@ -86,7 +87,7 @@ class Packet
                         break;
                 }
             }
-            else cout << "tdc value, " << (int)value << ", to high\n";
+            else std::cerr << "tdc value, " << (int)value << ", to high\n";
         }
 
         void set_capid(int i)
@@ -98,17 +99,22 @@ class Packet
         {
             for(int i=0; i<12;i++)
             {
-                cout << i << ": ";
+                std::cout << i << ": ";
                 output_char(data[i]);
             }
         }
         void write_data()
         {
-            for(int i=0; i<6;i++)
+            printf("1%02x%02x\n",data[1],data[0]);
+            for(int i=1; i<6;i++)
             {
-                printf("%02x%02x\n",data[2*i+1],data[2*i]);
+                printf("0%02x%02x\n",data[2*i+1],data[2*i]);
             }
         }
+
+    private:
+        //Constants
+        static const int CHANNELS_PER_FIBER=6;
 
 };
 
@@ -118,57 +124,49 @@ class Generator
     public:
         Generator()
         {
-            orbits = 10;
-            channels = 3;
-            qies = 6;
-            cout << "Constructor\n";
+            m_nfibers = 1;
             init_matrix();
-            create_data();
         }
 
-        Generator(int n_orbits, int n_channels) 
+        Generator(int fibers) : m_nfibers(fibers)
         {
-            orbits = n_orbits;
-            channels = n_channels;
-            qies = 6;
             init_matrix();
-            create_data();
         }
         ~Generator() {}
 
     public:
         void write_data()
         {
-            for ( int j = 0; j< channels; j++)
-                for (int i = 0; i < orbits; i++)
-                    for( int k = 0; k< qies; k++)
+            create_data();
+            for ( int j = 0; j< m_nfibers; j++)
+                for (int i = 0; i < N_BX; i++)
                         packets.at(j).at(i).write_data();
         }
 
         void print_data()
         {
-            for ( int j = 0; j< channels; j++)
-                for (int i = 0; i < orbits; i++)
-                    for( int k = 0; k< qies; k++)
+            for ( int j = 0; j< m_nfibers; j++)
+                for (int i = 0; i < N_BX; i++)
                         packets.at(j).at(i).print_data();
         }
 
     protected:
-        virtual int get_data(int orbit, int channel, int qie, uint8_t &adc,  uint8_t &tdc) = 0;
+        virtual int get_data(int fiber, int qie, int BX, uint8_t &adc,  uint8_t &tdc) 
+        {
+            adc = 0;
+            tdc = 0;
+        }
+
         void create_data()
         {
-            cout << "create_data\n";
             uint8_t adc=0;
             uint8_t tdc=0;
 
-            cout << packets.size();
-
-            for ( int j = 0; j< channels; j++) {
-                for (int i = 0; i < orbits; i++) {
-                    cout << "debug: " << i<< " " << j<< endl;
+            for ( int j = 0; j< m_nfibers; j++) {
+                for (int i = 0; i < N_BX; i++) {
                     packets.at(j).at(i).set_capid(i % 3);
-                    for( int k = 0; k< qies; k++) {
-                        this->get_data(i,j,k,adc,tdc);
+                    for( int k = 0; k< CHANNELS_PER_FIBER; k++) {
+                        get_data(i,j,k,adc,tdc);
                         packets.at(j).at(i).set_adc(k,adc);
                         packets.at(j).at(i).set_tdc(k,tdc);
                     }
@@ -176,37 +174,37 @@ class Generator
             }
         }
         void init_matrix()
-        {
-            cout << "init\n";
-            for ( int j = 0; j< channels; j++)
+       {
+            for ( int j = 0; j< m_nfibers; j++)
             {
-                vector<Packet> temp_vec;
+                std::vector<Packet> temp_vec;
                 temp_vec.push_back(Packet(true));
-                for (int i = 1; i < orbits; i++)
-                    temp_vec.push_back(Packet());
+                for (int i = 1; i < N_BX; i++)
+                    temp_vec.push_back(Packet(false));
                 packets.push_back(temp_vec);
             }
         }
 
-        vector< vector<Packet> > packets;
-        int channels;
-        int orbits;
-        int qies;
+    private:
+        //Constants
+        static const int CHANNELS_PER_FIBER=6;
+        static const int N_BX=2040;
+
+        //Member variables
+        std::vector< std::vector<Packet> > packets;
+        int m_nfibers;
 
 };
 
 class special_Generator : public Generator
 {
     public:
-        special_Generator() : Generator() {}
-        special_Generator(int a,int b) : Generator(a,b) {}
+        special_Generator() : Generator(1) {}
     protected:
         virtual int get_data(int orbit, int channel, int qie, uint8_t &adc,  uint8_t &tdc)
         {
-            adc = 0;
+            adc = qie;
             tdc = 0;
-            adc = orbit + channel + qie;
-            tdc = orbit + channel + qie;
         }
 };
 
