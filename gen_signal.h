@@ -1,5 +1,6 @@
 #include <vector>
 #include <stdint.h>
+#include <stdio.h>
 
 class Packet
 {
@@ -31,11 +32,12 @@ class Packet
         void print_hex();
 
         //Write hex to file
-        //void write_hex(char name[]);
+        void write_hex(FILE * fileout);
 
     private:
         //Constants
         static const int CHANNELS_PER_FIBER=6;
+        static const int TDC_MAX = 64;
 
 };
 
@@ -58,11 +60,13 @@ class Generator
         void create_data();
         void init_matrix();
 
-    private:
+    protected:
         //Constants
         static const int CHANNELS_PER_FIBER=6;
         static const int N_BX=2048;
+        static const int TDC_MAX = 64;
 
+    private:
         //Member variables
         std::vector< std::vector<Packet> > packets;
         int m_nfibers;

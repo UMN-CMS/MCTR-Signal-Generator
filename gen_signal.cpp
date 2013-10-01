@@ -1,5 +1,4 @@
 #include <iostream>
-#include <stdio.h>
 #include "gen_signal.h"
 
 Packet::Packet()
@@ -51,7 +50,7 @@ void Packet::set_adc(int qie,uint8_t value)
 }
 void Packet::set_tdc(int qie, uint8_t value)
 {
-    if(value < 64)
+    if(value < TDC_MAX)
     {
         switch(qie)
         {
@@ -103,6 +102,15 @@ void Packet::print_hex()
     }
 }
 
+void Packet::write_hex(FILE * fileout)
+{
+    fprintf(fileout,"1%02x%02x\n",m_data[1],m_data[0]);
+    for(int i=1; i<6;i++)
+    {
+        fprintf(fileout,"0%02x%02x\n",m_data[2*i+1],m_data[2*i]);
+    }
+}
+
 Generator::Generator()
 {
     m_nfibers = 1;
@@ -134,12 +142,19 @@ void Generator::print_binary()
             packets.at(j).at(i).print_binary();
 }
 
-void Generator::write_hex(char name[])
+void Generator::write_hex(char name_pattern[])
 {
     if(!m_data_created) create_data();
     for ( int j = 0; j< m_nfibers; j++)
+    {
+        char filename[128];
+        sprintf(filename,name_pattern,j);
+        FILE * fileout = fopen(filename,"w");
         for (int i = 0; i < N_BX; i++)
-            packets.at(j).at(i).print_hex();
+            packets.at(j).at(i).write_hex(fileout);
+
+        fclose(fileout);
+    }
 }
 
 void Generator::get_data(int fiber, int qie, int BX, uint8_t &adc,  uint8_t &tdc) 
